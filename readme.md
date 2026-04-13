@@ -377,4 +377,111 @@ x-ui reset       # сбросить на дефолт
 
 ---
 
+## 11. Справочник geosite-доменов для маршрутизации
+
+В правилах маршрутизации Xray можно использовать готовые списки доменов (`geosite:`) и IP-диапазонов (`geoip:`). Ниже популярные значения, которые можно направить через WARP или другой outbound.
+
+### Поисковики и AI
+
+| Значение | Что включает |
+|----------|-------------|
+| `geosite:google` | Все сервисы Google: Поиск, Gmail, Drive, Maps, YouTube, Gemini и др. |
+| `geosite:openai` | ChatGPT, API OpenAI, auth.openai.com |
+| `geosite:bing` | Bing, Copilot |
+
+### Видео и стриминг
+
+| Значение | Что включает |
+|----------|-------------|
+| `geosite:youtube` | YouTube (входит в google, но можно указать отдельно) |
+| `geosite:netflix` | Netflix |
+| `geosite:hulu` | Hulu |
+| `geosite:disney` | Disney+ |
+| `geosite:spotify` | Spotify |
+| `geosite:twitch` | Twitch |
+| `geosite:hbo` | HBO Max |
+| `geosite:primevideo` | Amazon Prime Video |
+| `geosite:tiktok` | TikTok |
+
+### Соцсети и мессенджеры
+
+| Значение | Что включает |
+|----------|-------------|
+| `geosite:facebook` | Facebook, Instagram, Threads |
+| `geosite:twitter` | X (Twitter) |
+| `geosite:telegram` | Telegram (web, API, CDN) |
+| `geosite:whatsapp` | WhatsApp |
+| `geosite:discord` | Discord |
+| `geosite:linkedin` | LinkedIn |
+| `geosite:reddit` | Reddit |
+| `geosite:pinterest` | Pinterest |
+
+### Разработка и IT
+
+| Значение | Что включает |
+|----------|-------------|
+| `geosite:github` | GitHub |
+| `geosite:gitlab` | GitLab |
+| `geosite:docker` | Docker Hub, registry |
+| `geosite:stackoverflow` | Stack Overflow |
+| `geosite:npm` | npm registry |
+| `geosite:pypi` | Python Package Index |
+
+### Облачные сервисы
+
+| Значение | Что включает |
+|----------|-------------|
+| `geosite:amazon` | Amazon (магазин + AWS консоль) |
+| `geosite:aws` | AWS-инфраструктура |
+| `geosite:microsoft` | Microsoft, Office 365, Azure |
+| `geosite:apple` | Apple, iCloud, App Store |
+| `geosite:cloudflare` | Сервисы Cloudflare |
+
+### Полезные geo-группы
+
+| Значение | Что включает |
+|----------|-------------|
+| `geosite:category-ads` | Рекламные домены (для блокировки: outbound → `blocked`) |
+| `geosite:category-porn` | Взрослый контент (для блокировки) |
+| `geosite:speedtest` | Speedtest.net, fast.com |
+| `geosite:private` | Локальные домены (.local, .lan и т.д.) |
+
+### GeoIP (по IP-адресам)
+
+| Значение | Что включает |
+|----------|-------------|
+| `geoip:private` | Локальные сети (10.x, 192.168.x, 172.16-31.x) |
+| `geoip:ru` | Российские IP-адреса |
+| `geoip:cn` | Китайские IP-адреса |
+| `geoip:cloudflare` | IP-диапазоны Cloudflare |
+| `geoip:google` | IP-диапазоны Google |
+
+### Как использовать
+
+Каждое значение вписывается в поле **Domain** или **IP** при создании правила маршрутизации:
+
+**Настройки Xray** → **Маршрутизация** → **+ Создать правило**
+
+| Поле | Значение |
+|------|---------|
+| Domain | `geosite:openai` |
+| Outbound Tag | `warp-socks` |
+
+Можно указать несколько значений через запятую:
+```
+geosite:google,geosite:openai,geosite:netflix
+```
+
+### Примеры полезных правил
+
+| Правило | Outbound | Эффект |
+|---------|----------|--------|
+| `geosite:google` | `warp-socks` | Google не детектит VPN |
+| `geosite:openai` | `warp-socks` | ChatGPT работает без блокировок |
+| `geosite:netflix` | `warp-socks` | Netflix не видит датацентр |
+| `geosite:category-ads` | `blocked` | Блокировка рекламы на уровне VPN |
+| `geoip:ru` | `direct` | Российские сайты идут напрямую, без VPN |
+
+---
+
 *By ITzMELKIY*
