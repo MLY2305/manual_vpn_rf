@@ -1,10 +1,46 @@
-# Развёртывание личного VPN-сервера
+# Свой VPN-сервер за 30 минут — полная инструкция для России (2025)
 
-### 3X-UI + VLESS Reality + Cloudflare WARP
+### VLESS Reality + 3X-UI + Cloudflare WARP | Обход блокировок и белых списков РКН
 
 **By ITzMELKIY**
 
-Полная инструкция по поднятию собственного VPN с нуля. Никаких платных VPN-сервисов, никаких логов, полный контроль. Разберётся даже тот, кто ни разу не работал с серверами.
+Пошаговая инструкция как поднять свой VPN с нуля на VDS — без логов, без платных VPN-сервисов, с полным контролем. Работает в России в 2025 году, обходит блокировки РКН, ТСПУ и белые списки. Разберётся даже тот, кто ни разу не работал с серверами. Поддерживает Windows, macOS, Android, iOS.
+
+> **Что внутри:** настройка VLESS Reality на своём сервере, маскировка трафика под HTTPS, обход DPI и белых списков через chaining (цепочку серверов), подключение Cloudflare WARP для обхода детекта VPN на Google/YouTube.
+
+---
+
+## 📑 Оглавление
+
+### Часть 1 — Базовый VPN (один сервер)
+
+1. [Покупка сервера (VDS)](#1-покупка-сервера-vds)
+2. [Подготовка сервера](#2-подготовка-сервера)
+3. [Настройка файрвола](#3-настройка-файрвола-защита-сервера)
+4. [Установка панели 3X-UI](#4-установка-панели-управления-3x-ui)
+5. [Защита панели](#5-защита-панели)
+6. [Создание VLESS Reality подключения](#6-создание-vpn-подключения-vless-reality)
+7. [Установка Cloudflare WARP](#7-установка-cloudflare-warp-обход-детекта-vpn)
+8. [Маршрутизация через WARP](#8-подключение-warp-к-панели-маршрутизация-через-cloudflare)
+9. [Клиенты для подключения](#9-приложения-для-подключения-клиенты)
+10. [Чеклист после установки](#10-чеклист-после-установки)
+11. [Обход VPN для российских сервисов](#11-обход-vpn-для-российских-сервисов-настройка-клиента)
+12. [Справочник geosite-доменов](#12-справочник-geosite-доменов-для-маршрутизации)
+13. [Решение проблем](#13-решение-проблем)
+
+### Часть 2 — Chaining (обход белых списков)
+
+14. [Что понадобится для chaining](#14-что-понадобится-для-chaining)
+15. [Данные exit-ноды](#15-подготовка--получи-данные-exit-ноды)
+16. [Подготовка bridge-сервера](#16-подготовка-bridge-сервера)
+17. [Файрвол bridge-ноды](#17-файрвол-bridge-ноды)
+18. [Установка 3X-UI на bridge](#18-установка-3x-ui-на-bridge)
+19. [Создание VPN-подключения на bridge](#19-создание-vpn-подключения-на-bridge-inbound)
+20. [Настройка пересылки на exit-ноду](#20-настройка-пересылки-на-exit-ноду-outbound)
+21. [Проверка chaining](#21-проверка-chaining)
+22. [Итоговая схема](#22-схема-после-настройки-chaining)
+23. [Решение проблем (chaining)](#23-решение-проблем-chaining)
+24. [FAQ](#24-faq)
 
 ---
 
@@ -382,15 +418,41 @@ systemctl enable warp-svc
 
 На каждом устройстве нужно установить VPN-клиент и вставить в него ссылку `vless://...`, которую получили в разделе 6.
 
-| Платформа | Приложение | Где скачать |
-|-----------|-----------|-------------|
-| Windows | Hiddify | [hiddify.com](https://hiddify.com) |
-| Windows | v2rayN | GitHub |
-| macOS | Hiddify | [hiddify.com](https://hiddify.com) |
-| Android | Hiddify | Google Play / GitHub |
-| Android | v2rayNG | Google Play |
-| iOS | Hiddify | App Store |
-| iOS | Streisand | App Store |
+| Платформа | Приложение | Где скачать | Комментарий |
+|-----------|-----------|-------------|-------------|
+| Windows | Hiddify | [hiddify.com](https://hiddify.com) | |
+| Windows | v2rayN | GitHub | |
+| macOS | Hiddify | [Скачать DMG](https://github.com/hiddify/hiddify-app/releases/download/v4.1.1/Hiddify-MacOS.dmg) | См. инструкцию ниже |
+| Android | v2rayTun | Google Play | **Рекомендуем для телефона** |
+| Android | Hiddify | Google Play / GitHub | |
+| Android | v2rayNG | Google Play | |
+| iOS | v2rayTun | App Store | **Рекомендуем для телефона** |
+| iOS | Hiddify | App Store | |
+| iOS | Streisand | App Store | |
+
+> **Для телефона** рекомендуем **v2rayTun** — стабильный, простой в использовании клиент с поддержкой VLESS Reality. Работает на Android и iOS.
+
+### Установка Hiddify на macOS
+
+macOS блокирует приложения, скачанные не из App Store. Есть два способа установки:
+
+#### Способ 1 — DMG (рекомендуемый)
+
+1. Скачиваем [Hiddify-MacOS.dmg](https://github.com/hiddify/hiddify-app/releases/download/v4.1.1/Hiddify-MacOS.dmg)
+2. Открываем DMG, перетаскиваем Hiddify в **Applications**
+3. Открываем **Терминал** и выполняем команду (снимает блокировку Gatekeeper):
+```bash
+xattr -cr /Applications/Hiddify.app
+```
+4. Запускаем Hiddify из Applications
+
+#### Способ 2 — PKG (установщик)
+
+1. Скачиваем [Hiddify-MacOS-Installer.pkg](https://github.com/hiddify/hiddify-app/releases/download/v4.1.1/Hiddify-MacOS-Installer.pkg)
+2. Двойной клик → если macOS заблокирует — **правый клик → Открыть**
+3. Следуем инструкциям установщика
+
+> **Требование:** macOS 10.15 (Catalina) и выше.
 
 ### Как подключиться
 
@@ -1009,4 +1071,12 @@ x-ui reset       # сбросить на дефолт
 
 ---
 
-*By ITzMELKIY*
+## 🔍 Ключевые слова
+
+<sub>
+VPN для России 2025 · как поднять свой VPN · VLESS Reality настройка · 3X-UI инструкция на русском · обход блокировок РКН · обход белых списков · ТСПУ обход · свой VPN-сервер пошаговая инструкция · VPN без логов · Cloudflare WARP настройка · chaining VPN · цепочка VPN серверов · VPN на VDS · как обойти блокировки интернета в России · VPN для YouTube · VPN для Gemini · обход DPI · VLESS Reality пошагово · v2rayN настройка · Hiddify настройка · VPN для Android · VPN для iPhone iOS · best VPN Russia · Xray VLESS setup guide · бесплатный VPN своими руками · VPN от блокировок 2025 · white list обход · FirstVDS VPN · VPN для обхода цензуры · как сделать VPN сервер · VPN Амстердам · bridge нода VPN · как обойти замедление YouTube · VPN для Google · VPN для ChatGPT из России · настройка VPN для чайников
+</sub>
+
+---
+
+*By ITzMELKIY · Telegram: [@itzmelkiy_pm](https://t.me/itzmelkiy_pm)*
